@@ -8,3 +8,4 @@ graphviz
 openai
 openpyxl
 scikit-learn
+xlsxwriter
