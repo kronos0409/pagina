@@ -1,0 +1,9 @@
+langchain 
+re
+pandas 
+streamlit 
+langchain_community.chat_models 
+matplotlib
+plotly
+io
+graphviz
