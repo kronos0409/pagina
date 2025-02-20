@@ -4,5 +4,4 @@ streamlit
 langchain_community
 matplotlib
 plotly
-io
 graphviz
