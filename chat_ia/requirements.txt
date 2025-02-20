@@ -1,11 +1,9 @@
 langchain 
+re
 pandas 
 streamlit 
-langchain_community
+langchain_community.chat_models 
 matplotlib
 plotly
+io
 graphviz
-openai
-openpyxl
-scikit-learn
-xlsxwriter

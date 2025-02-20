@@ -9,6 +9,36 @@ import plotly.graph_objects as go
 import io
 import graphviz
 # Inicializar el historial del chat en session_state
+#hojas
+def combinar_hojas_excel(ruta_archivo):
+    # Leer el archivo Excel y obtener todas las hojas
+    excel_file = pd.ExcelFile(ruta_archivo)
+    hojas = {}
+    
+    # Cargar cada hoja como DataFrame
+    for nombre_hoja in excel_file.sheet_names:
+        hojas[nombre_hoja] = pd.read_excel(ruta_archivo, sheet_name=nombre_hoja)
+    
+    # Encontrar columnas comunes
+    if not hojas:  # Verificar si hay hojas
+        return pd.DataFrame()
+    
+    # Obtener la intersección de columnas de todas las hojas
+    columnas_comunes = set.intersection(*[set(df.columns) for df in hojas.values()])
+    
+    if not columnas_comunes:  # Si no hay columnas comunes
+        return pd.DataFrame()
+    
+    # Crear lista de DataFrames con solo las columnas comunes
+    dfs_comunes = []
+    for nombre_hoja, df in hojas.items():
+        # Seleccionar solo las columnas comunes
+        df_comun = df[list(columnas_comunes)]
+        dfs_comunes.append(df_comun)
+    
+    # Combinar todos los DataFrames
+    df_final = pd.concat(dfs_comunes, ignore_index=True)
+    return df_final
 #decodificar
 #______________
 def decodificar(df, encoders):
@@ -512,7 +542,11 @@ if "preguntas_pendientes" not in st.session_state:
     st.session_state.preguntas_pendientes = []
 if "respuestas_preguntas" not in st.session_state:
     st.session_state.respuestas_preguntas = {}
-
+st.sidebar.title("Asistente de Analisis")
+st.sidebar.header("Información antes de empezar:")
+st.sidebar.markdown("1-Se aceptan archivos excel o csv (delimitados por comas porfavor)")
+st.sidebar.markdown("2-Esta pagina posee una IA que actua como asistente, haga sus solicitudes lo mas clara que pueda para que el asistente les pueda ayudar")
+st.sidebar.markdown("2-Esta pagina posee una IA que actua como asistente, haga sus solicitudes lo mas clara que pueda para que el asistente les pueda ayudar")
 # Mostrar mensajes previos (si existen)
 # Clave de OpenAI
 openai_api_key = st.secrets["openai_api_key"] if "openai_api_key" in st.secrets else st.text_input("Ingresa tu clave de OpenAI", type="password")
@@ -545,17 +579,26 @@ if archivo:
         # Leer el archivo Excel para obtener las hojas disponibles
         excel_file = pd.ExcelFile(archivo)
         hojas = excel_file.sheet_names  # Lista de nombres de hojas
-        
+        hojas.append("Todas Las Hojas")
         # Permitir al usuario seleccionar una hoja
         hoja_seleccionada = st.selectbox("Selecciona la hoja del archivo Excel que deseas usar:", hojas)
         
         # Cargar el DataFrame de la hoja seleccionada
-        if hoja_seleccionada:
-            DF = pd.read_excel(archivo, sheet_name=hoja_seleccionada)
-            DF.fillna('N/A', inplace=True)
-            st.write(f"Vista previa de los datos de la hoja '{hoja_seleccionada}':")
-            st.dataframe(DF.head())
-    
+        if hoja_seleccionada != "Todas Las Hojas":
+            if hoja_seleccionada:
+                DF = pd.read_excel(archivo, sheet_name=hoja_seleccionada)
+                DF.fillna('N/A', inplace=True)
+                st.write(f"Vista previa de los datos de la hoja '{hoja_seleccionada}':")
+                st.dataframe(DF.head())
+        else:
+            DF = combinar_hojas_excel(archivo)
+            if DF.empty:
+                with st.chat_message("ai"):
+                    st.write("Lo lamento, no se pudo encontrar columnas en comun, estas seguro de usar todas las columnas?")
+            else:
+                DF.fillna('N/A', inplace=True)
+                st.write(f"Vista previa de los datos de la hoja '{hoja_seleccionada}':")
+                st.dataframe(DF.head())
     # Continuar solo si DF está definido
     if DF is not None:
         for mensaje in st.session_state.mensajes:
