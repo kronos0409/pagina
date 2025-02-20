@@ -239,6 +239,7 @@ def fase_2(respuesta, solicitud):
         except Exception as e:
             with st.chat_message('ai'):
                 st.write("Lo lamento, hubo un error en mi codigo, intentalo de nuevo porfavor")
+                st.write(e)
             print(e)
 #______________________________________________________
 
