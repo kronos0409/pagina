@@ -1,7 +1,7 @@
 langchain 
 pandas 
 streamlit 
-langchain_community.chat_models 
+langchain_community
 matplotlib
 plotly
 io
