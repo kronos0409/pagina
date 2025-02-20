@@ -250,74 +250,102 @@ def fase_3(respuestas,solicitud,respuesta_usuario, preguntas):
     if respuestas!= None:
         prompt = PromptTemplate(
             input_variables=["input_usuario"],
-            template=f""" 
-                Tu trabajo es analizar los siguientes mensajes: '{respuesta_usuario}', {solicitud} y  en  especial esto: {preguntas} y {respuestas} 
-                para crear un codigo de python que genere lo que se pide, sin embargo hay reglas.
-                Reglas:
-                    -puedes usar las siguientes herramientas: Pandas, matplotlib, plotly, seaborn, sklearn, LabelEncoder y todas las que necesites, sin embargo debes de importarlas
-                    -si es se te pide graficar no integres plt.show o similares y la sigura debe de estar en un fig
-                    -el codigo NO DEBE DE TENER COMENTARIOS
-                    -NO DEBES CREAR OTRO DF, EL DF YA ESTA EN EL SISTEMA Y SE LLAMA DF, TIENES ACCESO A SUS COLUMNAS Y A UN RESUMEN PERO DEBES USAR EL DF EN SU TOTALIDAD, EL RESUMEN ES PARA QUE VEAS EL CONTEXTO Y POR ULTIMO RECUERDA ES 'DF' no 'df'
-                    -Asegurate de que el codigo sea funcional
-                    -Siempre debe llamarse la figura fig
-                    -Si es que se solicita informacion como el promedio, mediana, etc, asignala a una variabla llamada 'mensaje' 
-                    -Si te piden un arbol de decision o random forest, haz todo lo que sea  necesario para hacerlos, crear las variables de entrenamiento y demas, si usas LabelEncoder asegurate de que el arbol de decisiones tenga las etiquetas con los nombres y no los numeros
-                    - Si hay variables independientes categóricas, usa LabelEncoder.
-                    -"el label encoder manejalo asi: "
-                        "generar un encoder para cada variable, por ejemplo para la variable 'categoria' seria asi: \n"
-                        "encoder_categoria = LabelEncoder()\n"
-                        "para luego hacer: \n"
-                        "x['categoria'] = encoder_categoria.fit_transform(x['categoria'])\n"
-                        "esto se debe generar al ultimo del codigo"
-                        "diccionario = "categoria: codigo for codigo, categoria in enumerate(encoder.classes_)""\n para cada una de las variables categóricas\n
-                        "por ejemplo si tenemos las variables LITO y MNZ, el diccionario seria asi: \n"
-                        "dicionario = LITO: codigo for codigo, categoria in enumerate(encoder_lito.classes_), MNZN: codigo for codigo, categoria in enumerate(encoder_MNZN.classes_) \n"
-                        "- Debe llamarse exactamente 'diccionario'.\n\n"
-                datos:
-                    - Hay una base de datos cargada en el sistema, la cual posee estas columnas {DF.columns} y este es un resumen de la base de datos {DF.head(5)}, esta almacenada en una variabla llamada 'DF', DEBES USARLA, no leerla y no te inventes datos, todos los datos estan ahi
-                    """
+            template=f"""
+Instrucciones para generar código Python basado en solicitudes del usuario:
+- Analizar: '{respuesta_usuario}', {solicitud}
+- Generar código Python funcional según lo pedido.
+
+### Herramientas Permitidas
+- Bibliotecas: Pandas, Matplotlib, Plotly, Seaborn, Sklearn, LabelEncoder, Graphviz
+- Importar explícitamente todas las dependencias usadas.
+
+### Reglas Generales
+- DataFrame: Usar 'DF' (existente en el sistema, no crear otro).
+- Variables: Usar 'X' e 'y' (no 'x' ni 'y').
+- Figuras: Siempre asignar a 'fig', no usar plt.show().
+- Sin comentarios en el código generado.
+- Información solicitada (ej. promedio, mediana): Asignar a 'mensaje' dinámico.
+
+### Gráficos y Modelos
+- Árboles de Decisión:
+  - Generar solo si el usuario lo solicita explícitamente.
+  - Usar Graphviz y 'tree' de Sklearn.
+  - Variable del modelo: 'model'.
+- Random Forest:
+  - Iteraciones predeterminadas: 1000 (salvo indicación contraria).
+
+### Codificación de Variables Categóricas
+- Usar LabelEncoder únicamente para árboles de decisión:
+  - Aplicar solo si se solicita un árbol de decisión y hay variables categóricas.
+  - Ejemplo: encoder_categoria = LabelEncoder()
+            X['categoria'] = encoder_categoria.fit_transform(X['categoria'])
+- Generar diccionarios (solo para árboles de decisión):
+  - 'diccionario': variable: código: categoría for código, categoría in enumerate(encoder.classes_)
+  - 'encoders': variable: encoder_objeto
+  - Ejemplo con LITO y MNZ:
+    - diccionario = 'LITO': código: categoría, 'MNZ': código: categoría
+    - encoders = 'LITO': encoder_lito, 'MNZ': encoder_mnz
+- Codificación al final del código, sin usar .update().
+
+### Datos
+- Base de datos: 'DF'
+  - Columnas: {DF.columns}
+  - Resumen: {DF.head(5)}
+- No leer ni inventar datos, usar únicamente 'DF'.
+
+###Archivos
+-si debes hcaer un archivo o df nuevo, guardalo como DF_Nuevo
+"""
                     )
     else:
         prompt = PromptTemplate(
             input_variables=["input_usuario"],
-            template=f""" 
-                Tu trabajo es analizar los siguientes mensajes: '{respuesta_usuario}', {solicitud}
-                para crear un codigo de python que genere lo que se pide, sin embargo hay reglas.
-                Reglas:
-                    -puedes usar las siguientes herramientas: Pandas, matplotlib, plotly, seaborn, sklearn, LabelEncoder y todas las que necesites, sin embargo debes de importarlas
-                    -si es se te pide graficar no integres plt.show o similares y la figura debe de estar en un fig
-                    -el codigo NO DEBE DE TENER COMENTARIOS
-                    -NO DEBES CREAR OTRO DF, EL DF YA ESTA EN EL SISTEMA Y SE LLAMA DF, TIENES ACCESO A SUS COLUMNAS Y A UN RESUMEN PERO DEBES USAR EL DF EN SU TOTALIDAD, POR ULTIMO RECUERDA ES 'DF' no 'df'
-                    -Para arboles de decision usa grafhviz
-                    -Asegurate de que el codigo sea funcional
-                    -si es que vas a usar 'x' e 'y', siempre usa 'X' e 'y'
-                    -Siempre debe llamarse la figura fig
-                    -Si es que se solicita informacion como el promedio, mediana, etc, asignala a una variabla llamada 'mensaje', recuerda hacer el mensaje dinamico no solo el numero 
-                    -Si te piden un arbol de decision o random forest, haz todo lo que sea  necesario para hacerlos
-                    -Si te piden un arbol de decision recuerda usar el nombre de la variable 'model' y asegurate de importar 'tree'
-                    - Si hay variables independientes categóricas, usa LabelEncoder.
-                    - Asegurate de tener importadas todas las dependencias
-                    - si te piden un random forest la cantidad de iteraciones predeterminadas sera de 1000, a no ser que el usuario diga lo contrario
-                    - SIEMPRE RECUERDA "el label encoder manejalo asi: "
-                        siempre debe ser como te muestro a continuacion, SIEMPRE:
-                        "generar un encoder para cada variable, por ejemplo para la variable 'categoria' seria asi: \n"
-                        "encoder_categoria = LabelEncoder()\n"
-                        "para luego hacer: \n"
-                        "x['categoria'] = encoder_categoria.fit_transform(x['categoria'])\n EN ESPECIAL ESTO"
-                        "esto se debe generar al ultimo del codigo"
-                        "diccionario = "categoria: codigo for codigo, categoria in enumerate(encoder.classes_)""\n para cada una de las variables categóricas NO USES .UPDATE NUNCA\n
-                        "por ejemplo si tenemos las variables LITO y MNZ, el diccionario seria asi: \n"
-                        "dicionario = LITO: codigo for codigo, categoria in enumerate(encoder_lito.classes_), MNZN: codigo for codigo, categoria in enumerate(encoder_MNZN.classes_) \n"
-                        "- Debe llamarse exactamente 'diccionario'.\n\n"
-                        "tambien debes de generar un diccionario en una variable llamada 'encoders' que contenga los encoders que usaste ejemplo:
-                        - encoders = 
-                                    'LITO': encoder_lito,
-                                    'MNZ': encoder_mnz,
-                                    'ALT': encoder_alt
-                                    
-                datos:
-                    - Hay una base de datos cargada en el sistema, la cual posee estas columnas {DF.columns} y este es un resumen de la base de datos {DF.head(5)}, esta almacenada en una variabla llamada 'DF', DEBES USARLA, no leerla y no te inventes datos, todos los datos estan ahi
-                    """
+            template=f"""
+Instrucciones para generar código Python basado en solicitudes del usuario:
+- Analizar: '{respuesta_usuario}', {solicitud}
+- Generar código Python funcional según lo pedido.
+
+### Herramientas Permitidas
+- Bibliotecas: Pandas, Matplotlib, Plotly, Seaborn, Sklearn, LabelEncoder, Graphviz
+- Importar explícitamente todas las dependencias usadas.
+
+### Reglas Generales
+- DataFrame: Usar 'DF' (existente en el sistema, no crear otro).
+- Variables: Usar 'X' e 'y' (no 'x' ni 'y').
+- Figuras: Siempre asignar a 'fig', no usar plt.show().
+- Sin comentarios en el código generado.
+- Información solicitada (ej. promedio, mediana): Asignar a 'mensaje' dinámico.
+
+### Gráficos y Modelos
+- Árboles de Decisión:
+  - Generar solo si el usuario lo solicita explícitamente.
+  - Usar Graphviz y 'tree' de Sklearn.
+  - Variable del modelo: 'model'.
+- Random Forest:
+  - Iteraciones predeterminadas: 1000 (salvo indicación contraria).
+
+### Codificación de Variables Categóricas
+- Usar LabelEncoder únicamente para árboles de decisión:
+  - Aplicar solo si se solicita un árbol de decisión y hay variables categóricas.
+  - Ejemplo: encoder_categoria = LabelEncoder()
+            X['categoria'] = encoder_categoria.fit_transform(X['categoria'])
+- Generar diccionarios (solo para árboles de decisión):
+  - 'diccionario': variable: código: categoría for código, categoría in enumerate(encoder.classes_)
+  - 'encoders': variable: encoder_objeto
+  - Ejemplo con LITO y MNZ:
+    - diccionario = 'LITO': código: categoría, 'MNZ': código: categoría
+    - encoders = 'LITO': encoder_lito, 'MNZ': encoder_mnz
+- Codificación al final del código, sin usar .update().
+
+### Datos
+- Base de datos: 'DF'
+  - Columnas: {DF.columns}
+  - Resumen: {DF.head(5)}
+- No leer ni inventar datos, usar únicamente 'DF'.
+
+###Archivos
+-si debes hcaer un archivo o df nuevo, guardalo como DF_Nuevo
+"""
                     ) 
     chain = LLMChain(llm=llm, prompt=prompt)
     codigo = chain.run(input_usuario=solicitud).strip()
@@ -484,10 +512,8 @@ if "preguntas_pendientes" not in st.session_state:
     st.session_state.preguntas_pendientes = []
 if "respuestas_preguntas" not in st.session_state:
     st.session_state.respuestas_preguntas = {}
-st.title("Asistente Inteligente para Data Science")
-archivo = st.file_uploader("Sube tu archivo Excel o CSV", type=["xlsx", "csv"])
-# Mostrar mensajes previos (si existen)
 
+# Mostrar mensajes previos (si existen)
 # Clave de OpenAI
 openai_api_key = st.secrets["openai_api_key"] if "openai_api_key" in st.secrets else st.text_input("Ingresa tu clave de OpenAI", type="password")
 if not openai_api_key:
@@ -500,55 +526,75 @@ llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.7, openai_api_key=opena
 respuesta_usuario = []
 respuesta_ia = []
 
+st.title("Asistente Inteligente para Data Science")
+archivo = st.file_uploader("Sube tu archivo Excel o CSV", type=["xlsx", "csv"])
+
+# Variable para almacenar el DataFrame
+DF = None
+
 if archivo:
-    DF = pd.read_csv(archivo, delimiter=";") if archivo.name.endswith(".csv") else pd.read_excel(archivo)
-    DF.fillna('N/A', inplace=True)
-    st.write("Vista previa de los datos:")
-    st.dataframe(DF.head())
-    for mensaje in st.session_state.mensajes:
-        with st.chat_message(mensaje["role"]):
-            try:
-                if mensaje['role'] ==  'user':
-                    respuesta_usuario.append(mensaje['content'])
-                else:
-                    respuesta_ia.append(mensaje['content'])
-                if isinstance(mensaje["content"], str):
-                    st.write(mensaje["content"])    
-            except:
+    # Si es un archivo CSV
+    if archivo.name.endswith(".csv"):
+        DF = pd.read_csv(archivo, delimiter=";")
+        DF.fillna('N/A', inplace=True)
+        st.write("Vista previa de los datos:")
+        st.dataframe(DF.head())
+    
+    # Si es un archivo Excel
+    elif archivo.name.endswith(".xlsx"):
+        # Leer el archivo Excel para obtener las hojas disponibles
+        excel_file = pd.ExcelFile(archivo)
+        hojas = excel_file.sheet_names  # Lista de nombres de hojas
+        
+        # Permitir al usuario seleccionar una hoja
+        hoja_seleccionada = st.selectbox("Selecciona la hoja del archivo Excel que deseas usar:", hojas)
+        
+        # Cargar el DataFrame de la hoja seleccionada
+        if hoja_seleccionada:
+            DF = pd.read_excel(archivo, sheet_name=hoja_seleccionada)
+            DF.fillna('N/A', inplace=True)
+            st.write(f"Vista previa de los datos de la hoja '{hoja_seleccionada}':")
+            st.dataframe(DF.head())
+    
+    # Continuar solo si DF está definido
+    if DF is not None:
+        for mensaje in st.session_state.mensajes:
+            with st.chat_message(mensaje["role"]):
                 try:
-                    if  "code" in mensaje:
-                        st.code(mensaje["code"])
-                    elif "fig_mat" in mensaje:
-                        st.pyplot(mensaje["fig_mat"])
-                    elif "fig_plot" in mensaje:
-                        st.plotly_chart(mensaje["fig_plot"])
-                    elif "arbol" in mensaje:
-                        st.graphviz_chart(mensaje["arbol"])
+                    if mensaje['role'] == 'user':
+                        respuesta_usuario.append(mensaje['content'])
                     else:
-                        st.dataframe(mensaje["DF"])
-                except Exception as e:
-                    st.error(f"Error al mostrar mensaje: {e}")
-    
-    #st.session_state.usuario = len(respuesta_usuario) -1
-    #st.session_state.ia = len(respuesta_ia) -1
-    #actual_usuario = respuesta_usuario[st.session_state.usuario:]
-    #actual_ia = respuesta_ia[st.session_state.ia:]
-    #print(respuesta_usuario)
-    #print(respuesta_ia)
-    solicitud = st.chat_input("Escribe tu consulta sobre los datos...")
-    if solicitud:
-        st.session_state.mensajes.append({"role": "user", "content": solicitud})
-        with st.chat_message("user"):
-            st.write(solicitud)
-        fase_1(DF, solicitud)
-    try:
-        if st.session_state.seguir:
-            i = st.session_state.i 
-            fase_2(respuesta_ia[0], respuesta_usuario[i])
-            st.session_state.i +=1
-    except Exception as e:
-        print(e)
-    # Fuera de las funciones, si existen preguntas pendientes, renderizamos el formulario de respuestas
-    
+                        respuesta_ia.append(mensaje['content'])
+                    if isinstance(mensaje["content"], str):
+                        st.write(mensaje["content"])    
+                except:
+                    try:
+                        if "code" in mensaje:
+                            st.code(mensaje["code"])
+                        elif "fig_mat" in mensaje:
+                            st.pyplot(mensaje["fig_mat"])
+                        elif "fig_plot" in mensaje:
+                            st.plotly_chart(mensaje["fig_plot"])
+                        elif "arbol" in mensaje:
+                            st.graphviz_chart(mensaje["arbol"])
+                        else:
+                            st.dataframe(mensaje["DF"])
+                    except Exception as e:
+                        st.error(f"Error al mostrar mensaje: {e}")
+        
+        solicitud = st.chat_input("Escribe tu consulta sobre los datos...")
+        if solicitud:
+            st.session_state.mensajes.append({"role": "user", "content": solicitud})
+            with st.chat_message("user"):
+                st.write(solicitud)
+            fase_1(DF, solicitud)
+        
+        try:
+            if st.session_state.seguir:
+                i = st.session_state.i 
+                fase_2(respuesta_ia[0], respuesta_usuario[i])
+                st.session_state.i += 1
+        except Exception as e:
+            print(e)
 else:
     st.session_state.mensajes = []
