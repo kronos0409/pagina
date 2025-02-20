@@ -312,9 +312,9 @@ Instrucciones para generar código Python basado en solicitudes del usuario:
 - Generar diccionarios (solo para árboles de decisión):
   - 'diccionario': variable: código: categoría for código, categoría in enumerate(encoder.classes_)
   - 'encoders': variable: encoder_objeto
-  - Ejemplo con LITO y MNZ:
-    - diccionario = 'LITO': código: categoría, 'MNZ': código: categoría
-    - encoders = 'LITO': encoder_lito, 'MNZ': encoder_mnz
+  - Ejemplo con LITO, MNZ y ALT:
+    - diccionario = 'LITO': código: categoría, 'MNZ': código: categoría, 'ALT': codigo: categoria
+    - encoders = 'LITO': encoder_lito, 'MNZ': encoder_mnz, 'ALT' : encoder_ALT
 - Codificación al final del código, sin usar .update().
 
 ### Datos
@@ -362,9 +362,9 @@ Instrucciones para generar código Python basado en solicitudes del usuario:
 - Generar diccionarios (solo para árboles de decisión):
   - 'diccionario': variable: código: categoría for código, categoría in enumerate(encoder.classes_)
   - 'encoders': variable: encoder_objeto
-  - Ejemplo con LITO y MNZ:
-    - diccionario = 'LITO': código: categoría, 'MNZ': código: categoría
-    - encoders = 'LITO': encoder_lito, 'MNZ': encoder_mnz
+  - Ejemplo con LITO, MNZ y ALT:
+    - diccionario = 'LITO': código: categoría, 'MNZ': código: categoría, 'ALT': codigo: categoria
+    - encoders = 'LITO': encoder_lito, 'MNZ': encoder_mnz, 'ALT' : encoder_ALT
 - Codificación al final del código, sin usar .update().
 
 ### Datos
