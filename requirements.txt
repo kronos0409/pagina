@@ -9,3 +9,9 @@ openai
 scikit-learn
 openpyxl
 xlsxwriter
+numpy
+scipy
+scikit-learn
+networkx
+Pillow
+statsmodels
