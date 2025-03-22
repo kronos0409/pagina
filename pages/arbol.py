@@ -23,7 +23,7 @@ if "independiente" not in st.session_state:
     st.session_state.Excel = pd.DataFrame()
     st.session_state.Archivo = None
     st.session_state.Archivo_previo = None
-    st.session_state.Hoja_seleccionada = None  # Para persistir la hoja seleccionada
+    st.session_state.Hoja_seleccionada = None
 
 st.header("Bienvenido a la pagina de funciones visuales")
 
@@ -35,7 +35,7 @@ if archivo != st.session_state.Archivo_previo:
     st.session_state.Archivo = archivo
     st.session_state.Archivo_previo = archivo
     st.session_state.Excel = pd.DataFrame()  # Reiniciar el DataFrame si el archivo cambió
-    st.session_state.Hoja_seleccionada = None  # Reiniciar la hoja seleccionada
+    st.session_state.Hoja_seleccionada = None
 
 # Leer el archivo solo si hay uno nuevo o cambió la hoja seleccionada
 if st.session_state.Archivo is not None:
@@ -43,26 +43,28 @@ if st.session_state.Archivo is not None:
         if st.session_state.Excel.empty:
             DF = pd.read_csv(st.session_state.Archivo, delimiter=";")
             DF.fillna('N/A', inplace=True)
-            st.write("Vista previa de los datos:")
-            st.dataframe(DF.head())
             st.session_state.Excel = DF
     elif st.session_state.Archivo.name.endswith(".xlsx"):
         excel_file = pd.ExcelFile(st.session_state.Archivo)
         hojas = excel_file.sheet_names
-        # Usar la hoja previamente seleccionada si existe, o None como predeterminado
         hoja_seleccionada = st.selectbox(
             "Selecciona la hoja del archivo Excel que deseas usar:",
             hojas,
             index=hojas.index(st.session_state.Hoja_seleccionada) if st.session_state.Hoja_seleccionada in hojas else 0
         )
-        # Actualizar el DataFrame solo si la hoja seleccionada cambió
         if hoja_seleccionada != st.session_state.Hoja_seleccionada or st.session_state.Excel.empty:
             DF = pd.read_excel(st.session_state.Archivo, sheet_name=hoja_seleccionada)
             DF.fillna('N/A', inplace=True)
-            st.write(f"Vista previa de los datos de la hoja '{hoja_seleccionada}':")
-            st.dataframe(DF.head())
             st.session_state.Excel = DF
-            st.session_state.Hoja_seleccionada = hoja_seleccionada  # Guardar la hoja seleccionada
+            st.session_state.Hoja_seleccionada = hoja_seleccionada
+
+# Mostrar vista previa si hay datos en el DataFrame
+if not st.session_state.Excel.empty:
+    if st.session_state.Archivo.name.endswith(".csv"):
+        st.write("Vista previa de los datos:")
+    else:
+        st.write(f"Vista previa de los datos de la hoja '{st.session_state.Hoja_seleccionada}':")
+    st.dataframe(st.session_state.Excel.head())
 
 # Si no hay archivo, reiniciar el DataFrame y la hoja seleccionada
 if st.session_state.Archivo is None:
