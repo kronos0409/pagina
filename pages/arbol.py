@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import CHAID_MIO as CH
-import os
 import io
 
 def Cambiar_tipo(variable, tipo, DF):
@@ -22,8 +21,9 @@ if "independiente" not in st.session_state:
     st.session_state.terminal_df = None
     st.session_state.boton = False
     st.session_state.Excel = pd.DataFrame()
-    st.session_state.Archivo = None  # Almacena el archivo subido
-    st.session_state.Archivo_previo = None  # Para comparar si cambió el archivo
+    st.session_state.Archivo = None
+    st.session_state.Archivo_previo = None
+    st.session_state.Hoja_seleccionada = None  # Para persistir la hoja seleccionada
 
 st.header("Bienvenido a la pagina de funciones visuales")
 
@@ -33,37 +33,48 @@ archivo = st.file_uploader("Suba sus archivos aqui", key="file_uploader")
 # Verificar si el archivo cambió o se eliminó
 if archivo != st.session_state.Archivo_previo:
     st.session_state.Archivo = archivo
-    st.session_state.Archivo_previo = archivo  # Actualizar el archivo previo
-    st.session_state.Excel = pd.DataFrame()  # Reiniciar el DataFrame solo si el archivo cambió
+    st.session_state.Archivo_previo = archivo
+    st.session_state.Excel = pd.DataFrame()  # Reiniciar el DataFrame si el archivo cambió
+    st.session_state.Hoja_seleccionada = None  # Reiniciar la hoja seleccionada
 
-# Leer el archivo solo si hay uno nuevo y el DataFrame está vacío
-if st.session_state.Archivo is not None and st.session_state.Excel.empty:
+# Leer el archivo solo si hay uno nuevo o cambió la hoja seleccionada
+if st.session_state.Archivo is not None:
     if st.session_state.Archivo.name.endswith(".csv"):
-        DF = pd.read_csv(st.session_state.Archivo, delimiter=";")
-        DF.fillna('N/A', inplace=True)
-        st.write("Vista previa de los datos:")
-        st.dataframe(DF.head())
+        if st.session_state.Excel.empty:
+            DF = pd.read_csv(st.session_state.Archivo, delimiter=";")
+            DF.fillna('N/A', inplace=True)
+            st.write("Vista previa de los datos:")
+            st.dataframe(DF.head())
+            st.session_state.Excel = DF
     elif st.session_state.Archivo.name.endswith(".xlsx"):
         excel_file = pd.ExcelFile(st.session_state.Archivo)
         hojas = excel_file.sheet_names
-        hoja_seleccionada = st.selectbox("Selecciona la hoja del archivo Excel que deseas usar:", hojas)
-        if hoja_seleccionada:
+        # Usar la hoja previamente seleccionada si existe, o None como predeterminado
+        hoja_seleccionada = st.selectbox(
+            "Selecciona la hoja del archivo Excel que deseas usar:",
+            hojas,
+            index=hojas.index(st.session_state.Hoja_seleccionada) if st.session_state.Hoja_seleccionada in hojas else 0
+        )
+        # Actualizar el DataFrame solo si la hoja seleccionada cambió
+        if hoja_seleccionada != st.session_state.Hoja_seleccionada or st.session_state.Excel.empty:
             DF = pd.read_excel(st.session_state.Archivo, sheet_name=hoja_seleccionada)
             DF.fillna('N/A', inplace=True)
             st.write(f"Vista previa de los datos de la hoja '{hoja_seleccionada}':")
             st.dataframe(DF.head())
-    st.session_state.Excel = DF  # Guardar el DataFrame en session_state
+            st.session_state.Excel = DF
+            st.session_state.Hoja_seleccionada = hoja_seleccionada  # Guardar la hoja seleccionada
 
-# Si no hay archivo, reiniciar el DataFrame
+# Si no hay archivo, reiniciar el DataFrame y la hoja seleccionada
 if st.session_state.Archivo is None:
     st.session_state.Excel = pd.DataFrame()
+    st.session_state.Hoja_seleccionada = None
 
 # Selección de opciones
 eleccion = st.radio("Eliga una opcion", options=["Arboles de decision", "Otra"], index=None)
 
 try:
     if eleccion == "Arboles de decision" and not st.session_state.Excel.empty:
-        DF = st.session_state.Excel  # Usar el DataFrame almacenado
+        DF = st.session_state.Excel
         c1, c2 = st.columns(2)
         with c1:
             variable_dep = st.selectbox("Escoga la variable dependiente", options=DF.columns)
