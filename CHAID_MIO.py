@@ -551,7 +551,7 @@ class CHAID(BaseEstimator):
         draw.rectangle([(0, 0), (total_width-1, text_height-1)], outline=(70, 130, 180), width=2)
 
         try:
-            font = ImageFont.truetype("ariblk.ttf", font_size)
+            font = ImageFont.truetype("ARLRDBD.TTF", font_size)
         except:
             print("No se encontró ariblk.ttf, usando fuente predeterminada.")
             font = ImageFont.load_default(font_size)
@@ -894,9 +894,9 @@ class CHAID(BaseEstimator):
                 draw = ImageDraw.Draw(text_img)
                 draw.rectangle([(0, 0), (orphan_width-1, orphan_height-1)], outline=(70, 130, 180), width=2)
                 try:
-                    font = ImageFont.truetype("ariblk.ttf", font_size)
+                    font = ImageFont.truetype("ARLRDBD.TTF", font_size)
                 except:
-                    font = ImageFont.load_default()
+                    font = ImageFont.load_default(font_size)
                 draw.text((15, 15), stats_text, fill='black', font=font)
                 img_array = np.array(text_img)
                 y_pos = y_start - i * vertical_spacing
