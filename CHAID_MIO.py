@@ -572,6 +572,7 @@ class CHAID(BaseEstimator):
 
         result_buf = io.BytesIO()
         combined_img.save(result_buf, format='PNG', dpi=(dpi, dpi))
+        combined_img.close()
         result_buf.seek(0)
         return result_buf
 
